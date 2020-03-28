@@ -9,9 +9,11 @@ sudo systemctl disable hostapd
 
 # Environment variables and directories
 printenv | grep "/home/`whoami`/.local/bin" > /dev/null 2>&1 || \
-	echo "export PATH=$PATH:$HOME/.local/bin" >> $HOME/.bashrc && bash
+	echo "export PATH=$PATH:$HOME/.local/bin" >> $HOME/.bashrc
+printenv | grep "/home/`whoami`/.local/bin" > /dev/null 2>&1 || \
+	export PATH=$PATH:$HOME/.local/bin
 mkdir -p $HOME/{.local/{etc,bin},.config/hotspot}
 
 # Installation
-curl --compressed -sfL "https://raw.githubusercontent.com/kevydotvinu/scripts/master/autopoweroff.sh" > "$HOME/.local/bin/hotspot" || echo "Download Failed"
+curl --compressed -sfL "https://raw.githubusercontent.com/kevydotvinu/WiFiRepeater/master/hotspot" > "$HOME/.local/bin/hotspot" || echo "Download Failed"
 chmod +x $HOME/.local/bin/hotspot
