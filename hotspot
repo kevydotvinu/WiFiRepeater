@@ -129,11 +129,11 @@ case $OPERATION in
 		echo "hotspot stop ${IFACE} && hotspot start ${IFACE}"
 		;;
 	help)
-		echo "USAGE: hotspot <start|stop|status|reset> <interface name>"
+		echo "USAGE: hotspot <start|stop|status|reset> <wireless interface name>"
 		echo "EXAMPLE: hostapd start wlan0"
 		;;
 	*)
-		echo "USAGE: hotspot <start|stop|status|reset> <interface name>"
+		echo "USAGE: hotspot <start|stop|status|reset> <wireless interface name>"
 		echo "EXAMPLE: hostapd start wlan0"
 		;;
 esac
