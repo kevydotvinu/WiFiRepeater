@@ -16,13 +16,13 @@ Example: hotspot start wlan0
 #### Usage
 ```bash
 * Help  
-hotspot --help
+hotspot help
 * Start  
 hotspot start <interface name>
 * Stop  
-hotspot start <interface name>
+hotspot stop <interface name>
 * Status  
-hotspot start <interface name>
+hotspot status <interface name>
 * Reset  
 hotspot reset <interface name>
 ```
