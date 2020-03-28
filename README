@@ -1,4 +1,4 @@
-### WiFi AP / WiFi repeater
+## WiFi AP / WiFi repeater
 
 #### Installation
 `git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd WiFiRepeater && bash -x install.sh`
