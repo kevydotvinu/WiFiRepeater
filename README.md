@@ -10,17 +10,19 @@ git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && c
 #### Start hotspot
 ```bash
 hotspot start <interface name>
+Example: hotspot start wlan0
 ```
-**Example:** `hotspot start wlan0`
 
 #### Usage
+```bash
 * Help  
-```hotspot --help````
+hotspot --help
 * Start  
-```hotspot start <interface name>```
+hotspot start <interface name>
 * Stop  
-```hotspot start <interface name>```
+hotspot start <interface name>
 * Status  
-```hotspot start <interface name>```
+hotspot start <interface name>
 * Reset  
-```hotspot reset <interface name>```
+hotspot reset <interface name>
+```
