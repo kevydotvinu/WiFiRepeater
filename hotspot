@@ -14,17 +14,13 @@
 #	* Original Code
 
 OPERATION="${1}"
-ip link show ${2} > /dev/null 2>&1 && IFACE="${2}" || OPERATION="help"
-ARGS="${#}"
+IFACE="${2}" && ip link show ${2} > /dev/null 2>&1 || OPERATION="help"
+[[ "${#}" == 2 ]] || OPERATION="help"
 AP="ap0"
-VAL="0" && ip link show ${AP} > /dev/null 2>&1 || VAL="1"
+LINK="up" && ip link show ${AP} > /dev/null 2>&1 || LINK="down"
 CREDFILE="$HOME/.config/hotspot/credentials.conf"
 
 mkdir -p $HOME/{.local/{etc,bin},.config/hotspot}
-
-function checkArgs() {
-	[[ "${ARGS}" == 2 ]] || OPERATION="help"
-}
 
 function checkCred() {
 if [ -f "${CREDFILE}" ]; then
@@ -69,7 +65,7 @@ EOF
 }
 
 function start() {
-if [ "$VAL" == 1 ]; then
+if [ "${LINK}" == down ]; then
 	sudo iw dev $IFACE interface add $AP type managed addr 12:34:56:78:ab:cd
 	sudo nmcli device set $AP managed no
 	sudo ip addr add ${NID}.1/24 dev $AP
@@ -87,7 +83,7 @@ fi
 }
 
 function stop() {
-if [ "$VAL" == 0 ]; then
+if [ "${LINK}" == up ]; then
 	sudo iw dev $AP del
 	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
 	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
@@ -107,7 +103,6 @@ ps -eo cmd | grep "\-[i] $AP" || \
 	echo "hotspot is stopped"
 }
 
-checkArgs
 case $OPERATION in
 	start)
 		checkCred
