@@ -3,7 +3,9 @@
 ### WiFi AP / WiFi repeater
 
 #### Installation
-`git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd WiFiRepeater && bash -x install.sh`
+```baah
+git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd WiFiRepeater && bash -x install.sh
+```
 
 #### Start hotspot
 `hotspot start <interface name>`  
