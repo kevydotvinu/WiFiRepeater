@@ -4,7 +4,7 @@
 
 #### Installation
 ```baah
-git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd WiFiRepeater && bash -x install.sh
+git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd /tmp/WiFiRepeater && bash -x install.sh
 ```
 
 #### Start hotspot
