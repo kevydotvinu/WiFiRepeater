@@ -6,7 +6,7 @@
 `git clone https://github.com/kevydotvinu/WiFiRepeater.git /tmp/WiFiRepeater && cd WiFiRepeater && bash -x install.sh`
 
 #### Start hotspot
-`hotspot start <interface name>`
+`hotspot start <interface name>`  
 Example: `hotspot start wlan0`
 
 #### Usage
