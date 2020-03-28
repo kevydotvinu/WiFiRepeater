@@ -1,0 +1,135 @@
+#!/bin/bash
+#
+# NAME
+#	Create WiFi AP / WiFi repeater
+#
+# SYNOPSIS
+#	hotspot wlan0 start
+#
+# DESCRIBTION
+#	It creates in-build/usb WiFi into access point or repeater.
+#
+# CHANGELOG
+#	- Fri Mar 27 2020 <kevy.vinu@gmail.com>
+#	* Original Code
+
+OPERATION="$1"
+IFACE="$2"
+ARGS="$#"
+AP="ap0"
+VAL="0" && ip link show $AP > /dev/null 2>&1 || VAL="1"
+CREDFILE="$HOME/.config/hotspot/credentials.conf"
+
+mkdir -p $HOME/{.local/{etc,bin},.config/hotspot}
+
+function checkArgs() {
+	[[ "${ARGS}" == 2 ]] || OPERATION="help"
+}
+
+function checkCred() {
+if [ -f "${CREDFILE}" ]; then
+	source "${CREDFILE}"
+else
+	read -p "Enter SSID for hotspot (do not leave it blank): " SSID
+	read -p "Enter PASSPHRASE for hotspot (do not leave it blank): " PASSPHRASE
+	echo "To reset SSID/PASSPHRASE, run: hotspot reset"
+	echo "SSID=${SSID}" | tee ${CREDFILE}
+	echo "PASSPHRASE=${PASSPHRASE}" | tee -a ${CREDFILE}
+fi
+}
+
+function dnsmasqConfig() {
+	cat << EOF > $HOME/.local/etc/dnsmasq.conf
+bind-interfaces
+server=8.8.8.8
+dhcp-range=192.168.9.50,192.168.9.150,255.255.255.0,12h
+EOF
+}
+
+function hostapdConfig() {
+	cat << EOF > $HOME/.local/etc/hostapd.conf
+driver=nl80211
+ssid=${SSID}
+hw_mode=g
+channel=7
+wmm_enabled=0
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=2
+wpa_passphrase=${PASSPHRASE}
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+EOF
+}
+
+function start() {
+if [ "$VAL" == 1 ]; then
+	sudo iw dev $IFACE interface add $AP type managed addr 12:34:56:78:ab:cd
+	sudo nmcli device set $AP managed no
+	sudo ip addr add 192.168.9.1/24 dev $AP
+	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
+	sudo dnsmasq -x /var/run/dnsmasq.hotspot.pid -i $AP -I lo -C $HOME/.local/etc/dnsmasq.conf
+	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
+	sudo hostapd -P /var/run/hostapd.hotspot.pid -i $AP -B $HOME/.local/etc/hostapd.conf
+	sudo iptables -t nat -D POSTROUTING -j MASQUERADE > /dev/null 2>&1
+	sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+	echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward > /dev/null 2>&1
+else
+	echo "hotspot is running"
+	echo "try: hotspot $IFACE stop && hotspot $IFACE start"
+fi
+}
+
+function stop() {
+if [ "$VAL" == 0 ]; then
+	sudo iw dev $AP del
+	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
+	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
+	sudo iptables -t nat -D POSTROUTING -j MASQUERADE > /dev/null 2>&1
+	echo 0 | sudo tee /proc/sys/net/ipv4/ip_forward > /dev/null 2>&1
+else
+	echo "hotspot is stopped"
+fi
+}
+
+function reset() {
+	rm -f "${CREDFILE}"
+}
+
+function status() {
+ps -eo cmd | grep "\-[i] $AP" || \
+	echo "hotspot is stopped on ${IFACE}"
+}
+
+checkArgs
+case $OPERATION in
+	start)
+		checkCred
+		dnsmasqConfig
+		hostapdConfig
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		status
+		;;
+	reset)
+		reset
+		checkCred
+		hostapdConfig
+		echo "Restart hotspot:"
+		echo "hotspot stop ${IFACE} && hotspot start ${IFACE}"
+		;;
+	help)
+		echo "USAGE: hotspot <start|stop|status|reset> <interface name>"
+		echo "EXAMPLE: hostapd start wlan0"
+		;;
+	*)
+		echo "USAGE: hotspot <start|stop|status|reset> <interface name>"
+		echo "EXAMPLE: hostapd start wlan0"
+		;;
+esac
