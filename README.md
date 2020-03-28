@@ -10,13 +10,13 @@
 Example: `hotspot start wlan0`
 
 #### Usage
-* Help
+* Help  
 `hotspot --help`
-* Start
+* Start  
 `hotspot start <interface name>`
-* Stop
+* Stop  
 `hotspot start <interface name>`
-* Status
+* Status  
 `hotspot start <interface name>`
-* Reset
+* Reset  
 `hotspot reset <interface name>`
