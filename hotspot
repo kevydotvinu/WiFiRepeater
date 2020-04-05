@@ -19,6 +19,7 @@ IFACE="${2}" && ip link show ${2} > /dev/null 2>&1 || OPERATION="help"
 AP="ap0"
 LINK="up" && ip link show ${AP} > /dev/null 2>&1 || LINK="down"
 CREDFILE="$HOME/.config/hotspot/credentials.conf"
+[[ `command -v dnsmasq iw hostapd ip | wc -w` == 4 ]] || OPERATION="prereq"
 
 mkdir -p $HOME/{.local/{etc,bin},.config/hotspot}
 
@@ -84,7 +85,7 @@ fi
 
 function stop() {
 if [ "${LINK}" == up ]; then
-	sudo iw dev $AP del
+	sudo iw dev $AP del > /dev/null 2>&1
 	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
 	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
 	sudo iptables -t nat -D POSTROUTING -j MASQUERADE > /dev/null 2>&1
@@ -126,6 +127,10 @@ case $OPERATION in
 	help)
 		echo "USAGE: hotspot <start|stop|status|reset> <wireless interface name>"
 		echo "EXAMPLE: hostapd start wlan0"
+		;;
+	prereq)
+		echo "Ensure following packages are installed:"
+		echo "dnsmasq, hostapd, iproute2 and iw"
 		;;
 	*)
 		echo "USAGE: hotspot <start|stop|status|reset> <wireless interface name>"
