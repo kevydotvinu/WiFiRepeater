@@ -44,6 +44,10 @@ function dnsmasqConfig() {
 bind-interfaces
 server=8.8.8.8
 dhcp-range=${NID}.50,${NID}.100,255.255.255.0,12h
+log-dhcp
+log-queries
+log-facility=/tmp/dnsmasq.log
+dhcp-leasefile=/tmp/dnsmasq.leases
 EOF
 }
 
@@ -67,15 +71,23 @@ EOF
 
 function start() {
 if [ "${LINK}" == down ]; then
-	sudo iw dev $IFACE interface add $AP type managed addr 12:34:56:78:ab:cd
-	sudo nmcli device set $AP managed no
-	sudo ip addr add ${NID}.1/24 dev $AP
+	sudo iw dev $IFACE interface add ${AP} type managed addr 12:34:56:78:ab:cd
+	sudo nmcli device set ${AP} managed no
+	sudo ip addr add ${NID}.1/24 dev ${AP}
 	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
-	sudo dnsmasq -x /var/run/dnsmasq.hotspot.pid -i $AP -I lo -C $HOME/.local/etc/dnsmasq.conf
+	sudo dnsmasq -x /var/run/dnsmasq.hotspot.pid -i ${AP} -I lo -C $HOME/.local/etc/dnsmasq.conf
 	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
-	sudo hostapd -P /var/run/hostapd.hotspot.pid -i $AP -B $HOME/.local/etc/hostapd.conf
-	sudo iptables -t nat -D POSTROUTING -j MASQUERADE > /dev/null 2>&1
-	sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+	sudo hostapd -P /var/run/hostapd.hotspot.pid -i ${AP} -B $HOME/.local/etc/hostapd.conf
+	sudo iptables -t nat -D POSTROUTING -s ${NID}.0/24 -j MASQUERADE > /dev/null 2>&1
+	sudo iptables -t nat -I POSTROUTING 1 -s ${NID}.0/24 -j MASQUERADE
+	sudo iptables -D INPUT -i ${AP} -p udp -m udp --dport 53 -j ACCEPT > /dev/null 2>&1
+	sudo iptables -I INPUT 1 -i ${AP} -p udp -m udp --dport 53 -j ACCEPT
+	sudo iptables -D INPUT -i ${AP} -p tcp -m tcp --dport 53 -j ACCEPT > /dev/null 2>&1
+	sudo iptables -I INPUT 1 -i ${AP} -p tcp -m tcp --dport 53 -j ACCEPT
+	sudo iptables -D INPUT -i ${AP} -p udp -m udp --dport 67 -j ACCEPT > /dev/null 2>&1
+	sudo iptables -I INPUT 1 -i ${AP} -p udp -m udp --dport 67 -j ACCEPT
+	sudo iptables -D INPUT -i ${AP} -p tcp -m tcp --dport 67 -j ACCEPT > /dev/null 2>&1
+	sudo iptables -I INPUT 1 -i ${AP} -p tcp -m tcp --dport 67 -j ACCEPT
 	echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward > /dev/null 2>&1
 else
 	echo "hotspot is running on ${IFACE}"
@@ -85,7 +97,7 @@ fi
 
 function stop() {
 if [ "${LINK}" == up ]; then
-	sudo iw dev $AP del > /dev/null 2>&1
+	sudo iw dev ${AP} del > /dev/null 2>&1
 	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
 	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
 	sudo iptables -t nat -D POSTROUTING -j MASQUERADE > /dev/null 2>&1
@@ -100,7 +112,7 @@ function reset() {
 }
 
 function status() {
-ps -eo cmd | grep "\-[i] $AP" || \
+ps -eo cmd | grep "\-[i] ${AP}" || \
 	echo "hotspot is stopped"
 }
 
