@@ -77,7 +77,7 @@ if [ "${LINK}" == down ]; then
 	sudo pkill -F /var/run/dnsmasq.hotspot.pid > /dev/null 2>&1
 	sudo dnsmasq -x /var/run/dnsmasq.hotspot.pid -i ${AP} -I lo -C $HOME/.local/etc/dnsmasq.conf
 	sudo pkill -F /var/run/hostapd.hotspot.pid > /dev/null 2>&1
-	sudo hostapd -P /var/run/hostapd.hotspot.pid -i ${AP} -B $HOME/.local/etc/hostapd.conf
+	sudo hostapd -P /var/run/hostapd.hotspot.pid -i ${AP} -B $HOME/.local/etc/hostapd.conf || rfkill
 	sudo iptables -t nat -D POSTROUTING -s ${NID}.0/24 -j MASQUERADE > /dev/null 2>&1
 	sudo iptables -t nat -I POSTROUTING 1 -s ${NID}.0/24 -j MASQUERADE
 	sudo iptables -D INPUT -i ${AP} -p udp -m udp --dport 53 -j ACCEPT > /dev/null 2>&1
