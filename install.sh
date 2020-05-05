@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Install packages
-sudo apt install hostapd dnsmasq
-sudo systemctl stop dnsmasq
-sudo systemctl disable dnsmasq
-sudo systemctl stop hostapd
-sudo systemctl disable hostapd
+sudo apt install hostapd dnsmasq iproute2 iw
+# sudo systemctl stop dnsmasq
+# sudo systemctl disable dnsmasq
+# sudo systemctl stop hostapd
+# sudo systemctl disable hostapd
 
 # Environment variables and directories
 printenv | grep "/home/`whoami`/.local/bin" > /dev/null 2>&1 || \
